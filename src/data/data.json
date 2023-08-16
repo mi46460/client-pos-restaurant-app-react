@@ -1,0 +1,34 @@
+{
+    "FoodData": [
+    {
+        "id": 2,
+        "imagePath": "/Images/Bacon_Caesar_Salad-removebg-preview.png",
+        "foodName": "Bacon Caeser Salad",
+        "price":2.24
+    },
+    {
+        "id": 3,
+        "imagePath": "/Images/Berry_Bowl-removebg-preview.png",
+        "foodName": "Berry Bow",
+        "price":2.24
+    },
+    {
+        "id": 4,
+        "imagePath": "/Images/Garlic_Roasted_Baby-removebg-preview.png",
+        "foodName": "Garlic Roasted Baby",
+        "price":2.24
+    },
+    {
+        "id": 5,
+        "imagePath": "/Images/Lemon___Parslye_Fingerling_Photato-removebg-preview.png",
+        "foodName": "Lemon Parslye Fingerling Photato",
+        "price":2.24
+    },
+    {
+        "id": 6,
+        "imagePath": "/Images/Poached_Egg_and_Avocado_Toast-removebg-preview.png",
+        "foodName": "Poached Egg and Avocado Toast",
+        "price":2.24
+    }
+    ]
+}
