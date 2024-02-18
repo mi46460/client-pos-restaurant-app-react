@@ -2,7 +2,7 @@ interface props {
     givenDate?: string
 }
 
-export default function DateConverter (props?: props) {
+export default function TodayDate (props?: props) {
     let newDate = new Date()
     let date = newDate.getDate();
     let day = newDate.getDay();

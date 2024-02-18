@@ -1,22 +1,20 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import SearchIcon from "../Icons/SearchIcon";
-import DateConverter from "../utils/DateConverter";
+import TodayDate from "../utils/DateConverter";
 import { TrashIcon } from "../Icons/TrashIcon";
 import { CreditCardicon } from "../Icons/CreditCardIcon";
 import { WalletIcon } from "../Icons/WalletIcon";
 import { CheckmateIcon } from "../Icons/CheckmateIcon";
 import { QrisIcon } from "../Icons/QrisIcon";
 import DummyData from "../data/data.json";
+import { AppPageContext, AppPageContextType } from "../Context/appPageContext";
+import MenuIcon from '@mui/icons-material/Menu';
 
 interface FoodData {
     id: number,
     imagePath: string,
     foodName: string,
     price: number
-}
-
-interface cardMenuPorps {
-    data: FoodData
 }
 
 interface Order {
@@ -27,7 +25,7 @@ interface Order {
 }
 
 export default function Dashboard() {
-    const currentDate = DateConverter();
+    const currentDate = TodayDate();
     const [activeTab, setActiveTab] = useState("Food");
     const [activeOrderState, setActiveOrderState] = useState("Dine In");
     const [listOrder, setListOrder] = useState<Order[]>([]);
@@ -35,25 +33,23 @@ export default function Dashboard() {
     const [paymentStatus, setPaymentStatus] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('Credit Card');
     const [subTotal, setSubTotal] = useState(0);
+    const {appPage, setNavbarState} = useContext(AppPageContext) as AppPageContextType;
 
     useEffect(() => {
         setListMenu(DummyData.FoodData);
     }, [])
     
-    const CardComponent = (props: cardMenuPorps) => {
+    const CardComponent = (props: FoodData) => {
         return (
             <div className="p-4 bg-bg-card-color text-white text-center rounded-2xl hover:cursor-pointer"
-            onClick={() => addToListOrder(props.data)}
+            onClick={() => addToListOrder(props)}
             >
-                <img src={props.data.imagePath} alt="" className=" block m-auto object-scale-down w-[200px] h-[200px]" />
+                <img src={props.imagePath} alt="" className=" block m-auto object-scale-down w-[200px] h-[200px]" />
                 <div className="font-medium text-sm font-barlow mt-3">
-                    {props.data.foodName}
+                    {props.foodName}
                 </div>
                 <div className="text-sm font-barlow font-normal mt-1">
-                    $ {props.data.price}
-                </div>
-                <div className="text-sm font-barlow font-light mt-1 text-[#ABBBC2]">
-                   20 Bowls Available
+                    $ {props.price}
                 </div>
             </div>
         )
@@ -87,7 +83,8 @@ export default function Dashboard() {
 
     const addToListOrder = (data: FoodData) => {
 
-        const isPresent = listOrder.find((arrayData) => arrayData.foodData === data)
+        const isPresent = listOrder.find((arrayData) => arrayData.foodData.id === data.id);
+        let newListOrder = [];
 
         if(!isPresent) {
             const newData: Order = {
@@ -96,11 +93,20 @@ export default function Dashboard() {
                 note: "",
                 price: data.price
             }
-            const newListOrder = [...listOrder, newData]
+            newListOrder = [...listOrder, newData];
+            
+        } else {
+            newListOrder = listOrder.map((order) => {
+                if(order.foodData.id === isPresent.foodData.id) {
+                    return {...order, qty: order.qty + 1}
+                }
 
-            setListOrder([...listOrder, newData]);
-            countSubTotal(newListOrder);
+                return order;
+            })
         }
+
+        setListOrder(newListOrder);
+        countSubTotal(newListOrder);
     }
 
     const removeOrder = (id: number) => {
@@ -122,29 +128,52 @@ export default function Dashboard() {
         setSubTotal(subTotal)
     }
 
+    const searchData = (keyword: string) => {
+        let result = [];
+
+        if(keyword.length === 0) {
+            setListMenu(DummyData.FoodData);
+        } else {
+            result = listMenu.filter((data) => {
+                return (data.foodName.toLowerCase()).includes(keyword);
+            });
+
+            setListMenu(result);
+        }
+    }
+
     return(
-        <>
-            <div className={`h-full w-3/5 bg-base-dark-bg-1 p-4 overflow-hidden`}>
-                    <div className="flex flex-row items-center justify-between">
-                        <div>
+        <div className={`${appPage === "Dashboard" ? 'w-full h-full flex' : 'hidden'}`}>
+            <div className={`h-full w-full md:w-3/5 bg-base-dark-bg-1 p-4 overflow-hidden`}>
+                <div className="flex justify-end md:hidden text-white hover:cursor-pointer"
+                onClick={setNavbarState}
+                >
+                    <MenuIcon />
+                </div>
+                <div className="flex justify-between flex-col md:flex-row md:items-center ">
+                    <div className="p-0">
                             <div className="font-barlow font-semibold text-xl text-white">
                                 Iqbal Resto
                             </div>
                             <div className="font-barlow text-white text-base mt-2 font-thin">
                                 {currentDate}
                             </div>
-                        </div>
-                        <div className="mt-1 mr-6">
-                            <label className="relative block">
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-                                <SearchIcon />
-                            </span>
-                            <input className="placeholder:font-barlow placeholder:text-xs font-barlow placeholder:text-slate-400 block bg-form-bg-color w-full border border-form-border-color rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-non text-slate-400 sm:text-sm text-sm" placeholder="Search for food, coffe, etc.." type="text"/>
-                            </label>
-                        </div>
                     </div>
-                    <div className="sticky">
-                        <ul className="mt-5 pl-[1px]">
+                    <div className="mr-6 flex bg-form-bg-color border border-form-border-color rounded-md">
+                            <div className={`mt-3 ml-2.5`}>
+                                <SearchIcon/>
+                            </div>
+                           
+                            <input className="placeholder:font-barlow placeholder:text-xs font-barlow placeholder:text-slate-400 
+                            bg-form-bg-color w-full py-2 pl-2 pr-3 focus:outline-none text-slate-400 text-sm" 
+                            placeholder="Search for food, coffe, etc.." 
+                            type="text"
+                            onChange={(e) => searchData(e.target.value)}
+                            />
+                    </div>
+                </div>
+                <div className="hidden md:sticky">
+                    <ul className="mt-5 pl-[1px]">
                             <li className={`inline font-barlow font-semibold text-sm ${activeTab === "Food" ? "text-icon-color-primary" : "text-white"} hover:cursor-pointer`}
                             onClick={() => setActiveTab("Food")}
                             >Food
@@ -153,21 +182,29 @@ export default function Dashboard() {
                             onClick={() => setActiveTab("Drink")}
                             >Drink
                             </li>
-                        </ul>
+                    </ul>
+                </div>
+                <div className="w-full border-[1px] border-form-border-color mt-4"></div>
+                {
+                    listMenu.length === 0 
+                    ?
+                    <div className="text-white font-barlow text-lg p-4 flex justify-center">
+                        Menu Tidak Ditemukan
                     </div>
-                    <div className="w-full border-[1px] border-form-border-color mt-4"></div>
-                    <div className="grid grid-cols-3 gap-3 p-4 h-5/6 overflow-y-auto">
+                    :
+                    <div className="grid grid-cols-1 gap-3 p-4 h-5/6 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
                         {
+                            
                             listMenu.map((data, index) => {
                                 return(
-                                    <CardComponent  
-                                    data={data}/>
+                                    <CardComponent {...data} />
                                 )
                             })
                         }
                     </div>
+                }
             </div>
-            <div className={`h-full w-2/5 bg-base-dark-bg-2 p-4 border-r-2 border-dark-line overflow-hidden 
+            <div className={`h-full w-0 bg-base-dark-bg-2 border-r-2 border-dark-line overflow-hidden md:w-2/5 md:p-4
             ${paymentStatus === true ? 'fixed right-margin-payment-on' : ''}
             `}>
                 <div className="text-white font-barlow font-semibold text-xl">
@@ -195,7 +232,7 @@ export default function Dashboard() {
                         >
                         Delivery
                     </div>
-                    </div>
+                </div>
                 <div className="flex justify-between py-4 text-white font-barlow font-semibold text-base">
                     <div>
                         Item
@@ -211,6 +248,7 @@ export default function Dashboard() {
                 </div>
                 <div className="w-full border-[1px] border-form-border-color"></div>
                 <div className={`overflow-y-auto mt-1 ${paymentStatus === true ? 'h-4/6' : 'h-3/5'}`}>
+ 
                     {
                         listOrder.map((data, index) => {
                             return(
@@ -403,6 +441,6 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className={`h-full w-payment-opacity opacity-60 bg-black absolute ${paymentStatus === false ? 'hidden' : ''}`}></div>
-        </>
+        </div>
     );
-}
+}    

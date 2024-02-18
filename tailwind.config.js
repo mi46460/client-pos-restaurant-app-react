@@ -21,7 +21,7 @@ module.exports = {
       },
       spacing: {
         'margin-payment-on': 'calc(100vw * 1/4)',
-        'payment-opacity': 'calc(100vw - (100vw * 65/100))'
+        'payment-opacity': 'calc(100vw - (100vw * 68.9/100))'
       },
     },
   },
